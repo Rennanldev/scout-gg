@@ -1,5 +1,4 @@
 export default async function handler(req, res) {
-  // Só aceita POST
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
@@ -11,18 +10,18 @@ export default async function handler(req, res) {
   }
 
   try {
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
+    const apiKey = process.env.GEMINI_API_KEY;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+
+    const response = await fetch(url, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": process.env.ANTHROPIC_API_KEY, // variável de ambiente segura
-        "anthropic-version": "2023-06-01",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 1500,
-        tools: [{ type: "web_search_20250305", name: "web_search" }],
-        messages: [{ role: "user", content: prompt }],
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 1500,
+        },
       }),
     });
 
@@ -32,11 +31,11 @@ export default async function handler(req, res) {
       return res.status(response.status).json({ error: data.error?.message || "Erro na API" });
     }
 
-    // Extrai só o texto da resposta
-    const text = data.content
-      .map((i) => (i.type === "text" ? i.text : ""))
-      .filter(Boolean)
-      .join("\n");
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+
+    if (!text) {
+      return res.status(500).json({ error: "Resposta vazia da API" });
+    }
 
     return res.status(200).json({ text });
   } catch (err) {
