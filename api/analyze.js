@@ -11,8 +11,11 @@ export default async function handler(req, res) {
 
   try {
     const apiKey = process.env.GEMINI_API_KEY;
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    if (!apiKey) {
+      return res.status(500).json({ error: "Chave de API não configurada no servidor" });
+    }
 
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
     const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -21,6 +24,7 @@ export default async function handler(req, res) {
         generationConfig: {
           temperature: 0.7,
           maxOutputTokens: 1500,
+          responseMimeType: "application/json",
         },
       }),
     });
