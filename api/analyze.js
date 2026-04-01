@@ -10,22 +10,23 @@ export default async function handler(req, res) {
   }
 
   try {
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.OPENROUTER_API_KEY;
     if (!apiKey) {
       return res.status(500).json({ error: "Chave de API não configurada no servidor" });
     }
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-    const response = await fetch(url, {
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`,
+        "HTTP-Referer": "https://scout-gg-neon.vercel.app",
+        "X-Title": "Scout GG"
+      },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 1500,
-          responseMimeType: "application/json",
-        },
+        model: "meta-llama/llama-3.3-70b-instruct:free",
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 1500,
       }),
     });
 
@@ -35,7 +36,7 @@ export default async function handler(req, res) {
       return res.status(response.status).json({ error: data.error?.message || "Erro na API" });
     }
 
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    const text = data.choices?.[0]?.message?.content || "";
 
     if (!text) {
       return res.status(500).json({ error: "Resposta vazia da API" });
