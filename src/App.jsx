@@ -61,10 +61,42 @@ function SectionTitle({ children, color }) {
 }
 
 function Spinner({ color }) {
+  const msgs = [
+    "Buscando dados históricos...",
+    "Calculando win rates...",
+    "Analisando confrontos diretos...",
+    "Processando estatísticas...",
+    "Gerando insights...",
+    "Calculando probabilidades...",
+    "Finalizando análise...",
+    "Quase lá, aguenta...",
+  ];
+  const [msgIdx, setMsgIdx] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const [slow, setSlow] = useState(false);
+
+  useState(() => {
+    const msgTimer = setInterval(() => setMsgIdx(i => (i + 1) % msgs.length), 3000);
+    const progTimer = setInterval(() => setProgress(p => p < 88 ? p + Math.random() * 4 : p), 1500);
+    const slowTimer = setTimeout(() => setSlow(true), 20000);
+    return () => { clearInterval(msgTimer); clearInterval(progTimer); clearTimeout(slowTimer); };
+  }, []);
+
   return (
-    <div style={{ textAlign: "center", padding: "60px 20px" }}>
+    <div style={{ textAlign: "center", padding: "50px 20px" }}>
       <div style={{ display: "inline-block", width: 44, height: 44, border: `3px solid #1a1f2e`, borderTop: `3px solid ${color}`, borderRadius: "50%", animation: "spin 0.7s linear infinite" }} />
-      <p style={{ color: "#8890a4", marginTop: 18, fontSize: 12, letterSpacing: "0.12em" }}>BUSCANDO DADOS...</p>
+      <p style={{ color: "#c8cdd8", marginTop: 18, fontSize: 13, letterSpacing: "0.08em", minHeight: 20, transition: "all 0.3s" }}>
+        {msgs[msgIdx]}
+      </p>
+      <div style={{ margin: "16px auto 0", maxWidth: 240, height: 4, background: "#1a1f2e", borderRadius: 2, overflow: "hidden" }}>
+        <div style={{ height: "100%", width: `${progress}%`, background: `linear-gradient(90deg, ${color}88, ${color})`, transition: "width 1.5s ease", borderRadius: 2 }} />
+      </div>
+      <p style={{ fontSize: 11, color: "#555", marginTop: 8 }}>{Math.round(progress)}%</p>
+      {slow && (
+        <p style={{ fontSize: 11, color: "#ffc800", marginTop: 12, letterSpacing: "0.06em" }}>
+          ⚠️ O servidor tá demorando mais que o normal, aguarde...
+        </p>
+      )}
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>
   );
@@ -498,6 +530,13 @@ export default function App() {
         <h1 style={{ fontSize: 26, fontWeight: 900, letterSpacing: "0.06em", color: "#fff", margin: "0 0 16px", textTransform: "uppercase" }}>
           SCOUT<span style={{ color: activeColor, transition: "color 0.3s" }}>.GG</span>
         </h1>
+
+        {/* Aviso beta */}
+        <div style={{ marginBottom: 14 }}>
+          <span style={{ display: "inline-block", background: "#ffc80015", border: "1px solid #ffc80033", borderRadius: 6, padding: "5px 12px", fontSize: 11, color: "#ffc800", letterSpacing: "0.06em" }}>
+            ⚠️ BETA — Dados estimados por IA · Em breve com dados reais do VLR.gg
+          </span>
+        </div>
 
         {/* Tabs */}
         <div style={{ display: "flex", justifyContent: "center", gap: 0, borderBottom: "1px solid #1a1f2e" }}>
