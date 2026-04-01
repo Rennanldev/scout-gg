@@ -24,7 +24,7 @@ export default async function handler(req, res) {
         "X-Title": "Scout GG"
       },
       body: JSON.stringify({
-        model: "google/gemma-3-27b-it:free",
+        model: "qwen/qwen3.6-plus-preview:free",
         messages: [{ role: "user", content: prompt }],
         max_tokens: 1500,
       }),
